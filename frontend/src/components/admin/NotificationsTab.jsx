@@ -1,13 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Bell, CloudRain, ShieldAlert, Droplet, Monitor, Send, Search, CheckCircle } from 'lucide-react';
 
 const NotificationsTab = () => {
-  const [activeTab, setActiveTab] = useState('System Notifications');
+  const [adminNotifs, setAdminNotifs] = useState([]);
 
-  const tabs = [
-    'System Notifications', 'Weather Alerts', 'Disease Alerts', 
-    'Irrigation Alerts', 'Broadcast Messages'
-  ];
+  useEffect(() => {
+    const stored = localStorage.getItem('sams_admin_notifications');
+    if (stored) {
+      setAdminNotifs(JSON.parse(stored));
+    }
+  }, []);
+
+  const handleMarkAllRead = () => {
+    const updated = adminNotifs.map(n => ({ ...n, isRead: true }));
+    setAdminNotifs(updated);
+    localStorage.setItem('sams_admin_notifications', JSON.stringify(updated));
+  };
 
   return (
     <div className="space-y-6">
@@ -16,20 +24,6 @@ const NotificationsTab = () => {
         <button className="btn-primary flex items-center gap-2 text-sm bg-agri-earth hover:bg-agri-earth-dark">
           <Send className="w-4 h-4" /> New Broadcast
         </button>
-      </div>
-
-      <div className="flex gap-4 border-b border-gray-200 dark:border-gray-800 overflow-x-auto hide-scrollbar">
-        {tabs.map(tab => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`pb-3 text-sm font-medium border-b-2 whitespace-nowrap transition-colors ${
-              activeTab === tab ? 'border-agri-green text-agri-green' : 'border-transparent text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            {tab}
-          </button>
-        ))}
       </div>
 
       <div className="card p-4 flex justify-between items-center bg-gray-50 dark:bg-gray-800/50">
@@ -41,71 +35,33 @@ const NotificationsTab = () => {
             className="w-full pl-9 pr-4 py-1.5 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-agri-green"
           />
         </div>
-        <button className="text-sm text-agri-green font-medium hover:underline flex items-center gap-1">
+        <button onClick={handleMarkAllRead} className="text-sm text-agri-green font-medium hover:underline flex items-center gap-1">
           <CheckCircle className="w-4 h-4"/> Mark all as handled
         </button>
       </div>
 
       <div className="space-y-4">
-        {activeTab === 'System Notifications' && (
-          <>
-            <div className="card p-4 flex gap-4 items-start border-l-4 border-blue-500 bg-blue-50 dark:bg-blue-900/10">
-              <div className="p-2 bg-blue-100 text-blue-600 rounded-full"><Monitor className="w-5 h-5"/></div>
-              <div>
-                <h4 className="font-bold text-blue-800 dark:text-blue-400">Database Backup Completed</h4>
-                <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">Daily system backup completed successfully at 02:00 AM.</p>
-                <span className="text-xs text-gray-500 mt-2 block">Today, 02:00 AM</span>
+        {adminNotifs.length === 0 ? (
+          <div className="card p-8 text-center text-gray-500">
+            <Monitor className="w-10 h-10 mx-auto mb-3 opacity-20" />
+            <p>No new system notifications from the User Dashboard.</p>
+          </div>
+        ) : (
+          adminNotifs.map((notif) => (
+            <div key={notif.id} className={`card p-4 flex gap-4 items-start border-l-4 ${!notif.isRead ? 'border-agri-green bg-agri-green/5' : 'border-gray-300'}`}>
+              <div className={`p-2 rounded-full shrink-0 ${!notif.isRead ? 'bg-agri-green/20 text-agri-green' : 'bg-gray-100 text-gray-500'}`}>
+                <Bell className="w-5 h-5"/>
+              </div>
+              <div className="flex-1">
+                <div className="flex justify-between items-start">
+                  <h4 className={`font-bold ${!notif.isRead ? 'text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-300'}`}>{notif.title}</h4>
+                  <span className="text-xs font-semibold px-2 py-1 rounded bg-blue-100 text-blue-700">{notif.type}</span>
+                </div>
+                <p className={`text-sm mt-1 ${!notif.isRead ? 'text-gray-700 dark:text-gray-300' : 'text-gray-500'}`}>{notif.message}</p>
+                <span className="text-xs text-gray-500 mt-2 block">{new Date(notif.time).toLocaleString()}</span>
               </div>
             </div>
-            <div className="card p-4 flex gap-4 items-start border-l-4 border-gray-500">
-              <div className="p-2 bg-gray-100 text-gray-600 rounded-full"><Monitor className="w-5 h-5"/></div>
-              <div>
-                <h4 className="font-bold text-gray-800 dark:text-gray-200">Maintenance Window Scheduled</h4>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">System will be down for maintenance on Sunday 00:00 - 04:00 AM.</p>
-                <span className="text-xs text-gray-500 mt-2 block">Yesterday</span>
-              </div>
-            </div>
-          </>
-        )}
-
-        {activeTab === 'Weather Alerts' && (
-          <div className="card p-4 flex gap-4 items-start border-l-4 border-red-500 bg-red-50 dark:bg-red-900/10">
-            <div className="p-2 bg-red-100 text-red-600 rounded-full"><CloudRain className="w-5 h-5"/></div>
-            <div>
-              <h4 className="font-bold text-red-800 dark:text-red-400">Heavy Rain Alert - Northern Region</h4>
-              <p className="text-sm text-red-700 dark:text-red-300 mt-1">Automated alert sent to 450 farmers regarding predicted heavy rainfall.</p>
-              <span className="text-xs text-gray-500 mt-2 block">2 hours ago</span>
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'Disease Alerts' && (
-          <div className="card p-4 flex gap-4 items-start border-l-4 border-amber-500 bg-amber-50 dark:bg-amber-900/10">
-            <div className="p-2 bg-amber-100 text-amber-600 rounded-full"><ShieldAlert className="w-5 h-5"/></div>
-            <div>
-              <h4 className="font-bold text-amber-800 dark:text-amber-400">Leaf Blight Risk Detected</h4>
-              <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">AI detected high risk of Leaf Blight in Sector 4. Prevention guidelines dispatched.</p>
-              <span className="text-xs text-gray-500 mt-2 block">5 hours ago</span>
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'Irrigation Alerts' && (
-          <div className="card p-4 flex gap-4 items-start border-l-4 border-blue-400 bg-blue-50 dark:bg-blue-900/10">
-            <div className="p-2 bg-blue-100 text-blue-600 rounded-full"><Droplet className="w-5 h-5"/></div>
-            <div>
-              <h4 className="font-bold text-blue-800 dark:text-blue-400">Low Soil Moisture Trigger</h4>
-              <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">5 farms reported critically low soil moisture. Automated irrigation suggestions sent.</p>
-              <span className="text-xs text-gray-500 mt-2 block">1 day ago</span>
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'Broadcast Messages' && (
-          <div className="card p-6 border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-500">
-            <Send className="w-12 h-12 mb-3 opacity-20" />
-            <p>No active broadcasts. Click "New Broadcast" to send a message to all users.</p>
-          </div>
+          ))
         )}
       </div>
     </div>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MapPin, Edit3, Trash2, Sprout, TrendingUp, Droplets, Sun, Wind, ShieldAlert, Bug, Lightbulb, FileText, Activity, AlertTriangle, Calendar, IndianRupee } from 'lucide-react';
+import { MapPin, Edit3, Trash2, Sprout, TrendingUp, Droplets, Sun, Wind, ShieldAlert, Bug, Lightbulb, FileText, Activity, AlertTriangle, Calendar, IndianRupee, Eye, X } from 'lucide-react';
 
 const tnDistricts = [
   "Ariyalur", "Chengalpattu", "Chennai", "Coimbatore", "Cuddalore", "Dharmapuri", "Dindigul", "Erode", "Kallakurichi", "Kanchipuram", "Kanniyakumari", "Karur", "Krishnagiri", "Madurai", "Mayiladuthurai", "Nagapattinam", "Namakkal", "Nilgiris", "Perambalur", "Pudukkottai", "Ramanathapuram", "Ranipet", "Salem", "Sivagangai", "Tenkasi", "Thanjavur", "Theni", "Thoothukudi", "Tiruchirappalli", "Tirunelveli", "Tirupathur", "Tiruppur", "Tiruvallur", "Tiruvannamalai", "Tiruvarur", "Vellore", "Viluppuram", "Virudhunagar"
@@ -86,6 +86,7 @@ const generateAIReport = (farmData) => {
 const FarmDetailsTab = ({ farms, setFarms, activeFarm, setActiveFarm }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [viewingFarm, setViewingFarm] = useState(null);
   
   const [formData, setFormData] = useState(activeFarm || {
     name: '', district: 'Coimbatore', area: '', soil: 'Red Soil', season: 'Summer', water: 'Medium', irrigation: 'Drip Irrigation'
@@ -140,6 +141,8 @@ const FarmDetailsTab = ({ farms, setFarms, activeFarm, setActiveFarm }) => {
     if (!formData.name || !formData.district || !formData.area) return alert('Farm Name, District, and Area are required');
 
     let updatedFarm;
+    const isNew = !activeFarm;
+    
     if (activeFarm) {
       updatedFarm = { ...formData, id: activeFarm.id };
       const updated = farms.map(f => f.id === activeFarm.id ? updatedFarm : f);
@@ -150,6 +153,18 @@ const FarmDetailsTab = ({ farms, setFarms, activeFarm, setActiveFarm }) => {
     }
     setActiveFarm(updatedFarm);
     setIsEditing(false);
+    
+    // Push notification to Admin Dashboard
+    const adminNotifs = JSON.parse(localStorage.getItem('sams_admin_notifications') || '[]');
+    adminNotifs.unshift({
+      id: Date.now(),
+      type: 'Farm Activity',
+      title: isNew ? `New Farm Registered: ${formData.name}` : `Farm Details Updated: ${formData.name}`,
+      message: `A user has ${isNew ? 'registered a new' : 'updated a'} farm in ${formData.district} spanning ${formData.area} acres.`,
+      time: new Date().toISOString(),
+      isRead: false
+    });
+    localStorage.setItem('sams_admin_notifications', JSON.stringify(adminNotifs));
   };
 
   return (
@@ -170,9 +185,14 @@ const FarmDetailsTab = ({ farms, setFarms, activeFarm, setActiveFarm }) => {
               <span className="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded">{farm.soil}</span>
               <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">{farm.area} Ac</span>
             </div>
-            <div className="absolute top-4 right-4 hidden group-hover:flex gap-2">
-              <button onClick={(e) => handleEditClick(e, farm)} className="text-gray-400 hover:text-agri-green"><Edit3 className="w-4 h-4" /></button>
-              <button onClick={(e) => handleDelete(e, farm.id)} className="text-gray-400 hover:text-red-500"><Trash2 className="w-4 h-4" /></button>
+            <div className="mt-4 pt-3 border-t border-gray-100 dark:border-gray-700 flex justify-between items-center">
+              <button onClick={(e) => { e.stopPropagation(); setViewingFarm(farm); }} className="text-xs text-blue-600 dark:text-blue-400 font-bold flex items-center gap-1 hover:underline">
+                <Eye className="w-3.5 h-3.5"/> View Details
+              </button>
+              <div className="flex gap-3">
+                <button onClick={(e) => handleEditClick(e, farm)} className="text-gray-400 hover:text-agri-green"><Edit3 className="w-4 h-4" /></button>
+                <button onClick={(e) => handleDelete(e, farm.id)} className="text-gray-400 hover:text-red-500"><Trash2 className="w-4 h-4" /></button>
+              </div>
             </div>
           </div>
         ))}
@@ -511,6 +531,49 @@ const FarmDetailsTab = ({ farms, setFarms, activeFarm, setActiveFarm }) => {
         )}
 
       </div>
+
+      {/* View Details Modal */}
+      {viewingFarm && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setViewingFarm(null)}>
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-lg" onClick={e => e.stopPropagation()}>
+            <div className="sticky top-0 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 p-5 flex items-center justify-between rounded-t-2xl">
+              <div>
+                <h3 className="text-xl font-bold flex items-center gap-2"><Sprout className="w-5 h-5 text-agri-green"/> Farm Details</h3>
+              </div>
+              <button onClick={() => setViewingFarm(null)} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"><X className="w-5 h-5"/></button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="bg-agri-green/10 border border-agri-green/20 rounded-xl p-5 mb-2">
+                <h2 className="text-2xl font-bold text-agri-green-deep dark:text-agri-green-light">{viewingFarm.name}</h2>
+                <p className="flex items-center gap-1 text-gray-600 dark:text-gray-300 mt-1"><MapPin className="w-4 h-4"/> {viewingFarm.district}</p>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+                  <p className="text-xs text-gray-500 uppercase mb-1">Land Area</p>
+                  <p className="font-bold text-lg">{viewingFarm.area} Acres</p>
+                </div>
+                <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+                  <p className="text-xs text-gray-500 uppercase mb-1">Soil Type</p>
+                  <p className="font-bold text-lg">{viewingFarm.soil}</p>
+                </div>
+                <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+                  <p className="text-xs text-gray-500 uppercase mb-1">Season</p>
+                  <p className="font-bold text-lg">{viewingFarm.season}</p>
+                </div>
+                <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+                  <p className="text-xs text-gray-500 uppercase mb-1">Water Avail.</p>
+                  <p className="font-bold text-lg">{viewingFarm.water}</p>
+                </div>
+                <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg col-span-2">
+                  <p className="text-xs text-gray-500 uppercase mb-1">Irrigation Method</p>
+                  <p className="font-bold text-lg">{viewingFarm.irrigation}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

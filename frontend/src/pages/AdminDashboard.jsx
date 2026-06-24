@@ -17,7 +17,24 @@ import NotificationsTab from '../components/admin/NotificationsTab';
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('Dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const [notifs, setNotifs] = useState([]);
   const navigate = useNavigate();
+
+  React.useEffect(() => {
+    const updateNotifs = () => {
+      const stored = localStorage.getItem('sams_admin_notifications');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        setNotifs(parsed);
+        setUnreadNotifications(parsed.filter(n => !n.isRead).length);
+      }
+    };
+    updateNotifs();
+    const interval = setInterval(updateNotifs, 2000); // Check for new notifs every 2s
+    return () => clearInterval(interval);
+  }, []);
 
   const handleLogout = () => {
     navigate('/login');
@@ -122,10 +139,47 @@ const AdminDashboard = () => {
             <h2 className="text-xl font-bold text-gray-800 dark:text-white">{activeTab}</h2>
           </div>
           <div className="flex items-center gap-2 sm:gap-4">
-            <button className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 relative transition-colors text-gray-600 dark:text-gray-300">
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-white dark:border-gray-800"></span>
-            </button>
+            <div className="relative">
+              <button 
+                onClick={() => setIsNotifOpen(!isNotifOpen)}
+                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 relative transition-colors text-gray-600 dark:text-gray-300"
+              >
+                <Bell className="w-5 h-5" />
+                {unreadNotifications > 0 && (
+                  <span className="absolute top-0 right-0 w-4 h-4 bg-red-500 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white dark:border-gray-800">
+                    {unreadNotifications > 9 ? '9+' : unreadNotifications}
+                  </span>
+                )}
+              </button>
+
+              {isNotifOpen && (
+                <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-gray-100 dark:border-gray-800 z-50 overflow-hidden">
+                  <div className="p-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50 dark:bg-gray-800/50">
+                    <h3 className="font-bold text-gray-800 dark:text-white">Recent Alerts</h3>
+                    <span className="text-xs bg-agri-green text-white px-2 py-1 rounded-full">{unreadNotifications} New</span>
+                  </div>
+                  <div className="max-h-80 overflow-y-auto">
+                    {notifs.length === 0 ? (
+                      <div className="p-6 text-center text-gray-500 text-sm">No new notifications</div>
+                    ) : (
+                      notifs.slice(0, 5).map(n => (
+                        <div key={n.id} className={`p-4 border-b border-gray-50 dark:border-gray-800/50 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer ${!n.isRead ? 'bg-agri-green/5' : ''}`}>
+                          <p className={`text-sm font-semibold ${!n.isRead ? 'text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-400'}`}>{n.title}</p>
+                          <p className="text-xs text-gray-500 mt-1 line-clamp-2">{n.message}</p>
+                          <p className="text-[10px] text-gray-400 mt-2">{new Date(n.time).toLocaleString()}</p>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                  <button 
+                    onClick={() => { setActiveTab('Notifications Center'); setIsNotifOpen(false); }}
+                    className="w-full p-3 text-sm text-center text-agri-green font-bold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors border-t border-gray-100 dark:border-gray-800"
+                  >
+                    View All in Notification Center
+                  </button>
+                </div>
+              )}
+            </div>
             <div className="h-6 w-px bg-gray-200 dark:bg-gray-700 hidden sm:block mx-1"></div>
             <div className="flex items-center gap-2 sm:gap-3">
               <div className="hidden sm:block text-right">

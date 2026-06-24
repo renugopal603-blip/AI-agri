@@ -4,30 +4,47 @@ import { Search, Plus, Edit, Trash2, CheckCircle, XCircle, User, Activity, X } f
 const UserManagementTab = () => {
   const [searchQuery, setSearchQuery] = useState('');
   
-  const [farmers, setFarmers] = useState([
-    { id: 1, name: 'John Doe', email: 'john@example.com', status: 'Active', location: 'North Acre', joinDate: '2023-10-15' },
-    { id: 2, name: 'Sarah Connor', email: 'sarah@example.com', status: 'Active', location: 'East Valley', joinDate: '2024-02-10' },
-    { id: 3, name: 'Michael Smith', email: 'michael@example.com', status: 'Suspended', location: 'West Fields', joinDate: '2023-11-05' },
-    { id: 4, name: 'Emma Wilson', email: 'emma@example.com', status: 'Pending', location: 'South Farm', joinDate: '2024-03-20' },
-  ]);
+  const [farmers, setFarmers] = useState(() => {
+    const saved = localStorage.getItem('sams_registered_users');
+    const registeredUsers = saved ? JSON.parse(saved) : [];
+    
+    const mockData = [
+      { id: 1, name: 'John Doe', email: 'john@example.com', status: 'Active', location: 'North Acre', joinDate: '2023-10-15' },
+      { id: 2, name: 'Sarah Connor', email: 'sarah@example.com', status: 'Active', location: 'East Valley', joinDate: '2024-02-10' },
+      { id: 3, name: 'Michael Smith', email: 'michael@example.com', status: 'Suspended', location: 'West Fields', joinDate: '2023-11-05' },
+      { id: 4, name: 'Emma Wilson', email: 'emma@example.com', status: 'Pending', location: 'South Farm', joinDate: '2024-03-20' },
+    ];
+    
+    // Combine mock data with newly registered users
+    const registeredEmails = new Set(registeredUsers.map(u => u.email));
+    const filteredMockData = mockData.filter(u => !registeredEmails.has(u.email));
+    
+    return [...filteredMockData, ...registeredUsers];
+  });
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentFarmer, setCurrentFarmer] = useState({ name: '', email: '', location: '', status: 'Active' });
+  const [currentFarmer, setCurrentFarmer] = useState({ name: '', email: '', status: 'Active' });
 
   const filteredFarmers = farmers.filter(f => 
     f.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    f.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    f.location.toLowerCase().includes(searchQuery.toLowerCase())
+    f.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleSave = (e) => {
     e.preventDefault();
     if (!currentFarmer.name || !currentFarmer.email) return;
-    setFarmers([...farmers, { 
-      ...currentFarmer, 
-      id: Date.now(), 
-      joinDate: new Date().toISOString().split('T')[0] 
-    }]);
+
+    if (currentFarmer.id) {
+      // Edit existing
+      setFarmers(farmers.map(f => f.id === currentFarmer.id ? { ...f, ...currentFarmer } : f));
+    } else {
+      // Add new
+      setFarmers([...farmers, { 
+        ...currentFarmer, 
+        id: Date.now(), 
+        joinDate: new Date().toISOString().split('T')[0] 
+      }]);
+    }
     setIsModalOpen(false);
   };
 
@@ -52,7 +69,7 @@ const UserManagementTab = () => {
           <p className="text-sm text-gray-500">Manage all registered farmers on the SAMS platform.</p>
         </div>
         <button 
-          onClick={() => { setCurrentFarmer({ name: '', email: '', location: '', status: 'Active' }); setIsModalOpen(true); }}
+          onClick={() => { setCurrentFarmer({ name: '', email: '', status: 'Active' }); setIsModalOpen(true); }}
           className="btn-primary flex items-center gap-2 text-sm bg-agri-green hover:bg-agri-green-dark"
         >
           <Plus className="w-4 h-4" /> Add Farmer
@@ -65,7 +82,7 @@ const UserManagementTab = () => {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input 
               type="text" 
-              placeholder="Search farmers by name, email, or location..." 
+              placeholder="Search farmers by name or email..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-agri-green"
@@ -81,7 +98,6 @@ const UserManagementTab = () => {
             <thead>
               <tr className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 text-gray-500 text-sm">
                 <th className="p-4 font-medium">Farmer Profile</th>
-                <th className="p-4 font-medium">Location / Farm</th>
                 <th className="p-4 font-medium">Account Status</th>
                 <th className="p-4 font-medium">Join Date</th>
                 <th className="p-4 font-medium text-right">Actions</th>
@@ -102,9 +118,6 @@ const UserManagementTab = () => {
                         </div>
                       </div>
                     </td>
-                    <td className="p-4 text-gray-600 dark:text-gray-300 font-medium">
-                      {farmer.location || 'Not Specified'}
-                    </td>
                     <td className="p-4">
                       <span className={`px-2.5 py-1 rounded-full text-xs font-medium flex items-center w-max gap-1.5
                         ${farmer.status === 'Active' ? 'bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-300' : 
@@ -120,13 +133,10 @@ const UserManagementTab = () => {
                     <td className="p-4 text-right">
                       <div className="flex justify-end gap-3">
                         <button 
-                          onClick={() => toggleStatus(farmer.id)} 
-                          className="text-gray-400 hover:text-amber-500 transition-colors" 
-                          title={farmer.status === 'Active' ? 'Suspend Account' : 'Activate Account'}
+                          onClick={() => { setCurrentFarmer(farmer); setIsModalOpen(true); }}
+                          className="text-gray-400 hover:text-blue-500 transition-colors" 
+                          title="Edit Farmer"
                         >
-                          <Activity className="w-4 h-4" />
-                        </button>
-                        <button className="text-gray-400 hover:text-blue-500 transition-colors" title="Edit Farmer">
                           <Edit className="w-4 h-4" />
                         </button>
                         <button 
@@ -156,7 +166,7 @@ const UserManagementTab = () => {
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95">
             <div className="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
-              <h3 className="text-xl font-bold">Add New Farmer</h3>
+              <h3 className="text-xl font-bold">{currentFarmer.id ? 'Edit Farmer' : 'Add New Farmer'}</h3>
               <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
                 <X className="w-6 h-6" />
               </button>
@@ -182,16 +192,6 @@ const UserManagementTab = () => {
                   onChange={(e) => setCurrentFarmer({...currentFarmer, email: e.target.value})} 
                   className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-agri-green" 
                   placeholder="jane@example.com" 
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Location / Farm Name</label>
-                <input 
-                  type="text" 
-                  value={currentFarmer.location} 
-                  onChange={(e) => setCurrentFarmer({...currentFarmer, location: e.target.value})} 
-                  className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-agri-green" 
-                  placeholder="e.g., North Acre" 
                 />
               </div>
               <div>

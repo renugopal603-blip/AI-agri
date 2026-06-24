@@ -19,9 +19,18 @@ const Register = () => {
       return;
     }
     try {
-      // TODO: Replace with real API call
-      // const { data } = await axios.post('/api/auth/register', { name, email, password, role });
-      // localStorage.setItem('userInfo', JSON.stringify(data));
+      const newUser = {
+        id: Date.now(),
+        name,
+        email,
+        status: 'Active',
+        location: 'Not Specified',
+        joinDate: new Date().toISOString().split('T')[0]
+      };
+      
+      const existingUsers = JSON.parse(localStorage.getItem('sams_registered_users') || '[]');
+      localStorage.setItem('sams_registered_users', JSON.stringify([...existingUsers, newUser]));
+
       navigate('/dashboard');
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed');

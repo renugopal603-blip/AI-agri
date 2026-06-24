@@ -1,5 +1,5 @@
-import React from 'react';
-import { Sun, CloudRain, Wind, Droplets, AlertTriangle, CloudLightning } from 'lucide-react';
+import React, { useState } from 'react';
+import { Sun, CloudRain, Wind, Droplets, AlertTriangle, CloudLightning, CheckCircle } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
 const forecastData = [
@@ -13,11 +13,38 @@ const forecastData = [
 ];
 
 const WeatherAnalysisTab = ({ activeFarm }) => {
+  const [isSynced, setIsSynced] = useState(false);
+
+  const handleSaveToAdmin = () => {
+    setIsSynced(true);
+    
+    // Create weather report data
+    const weatherData = {
+      farmName: activeFarm?.name || 'North Acre',
+      district: activeFarm?.district || 'Coimbatore',
+      dateSynced: new Date().toISOString(),
+      forecast: forecastData,
+      current: { temp: 32, humidity: 45, wind: 12, rainProb: 10 }
+    };
+    
+    // Store in local storage for Admin dashboard
+    localStorage.setItem('sams_weather_data', JSON.stringify(weatherData));
+
+    setTimeout(() => {
+      setIsSynced(false);
+    }, 1500);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center mb-2">
-        <h3 className="text-xl font-bold">Weather Analysis ({activeFarm?.location || 'Coimbatore'})</h3>
-        <span className="text-sm text-gray-500">Last updated: Just now</span>
+        <h3 className="text-xl font-bold">Weather Analysis ({activeFarm?.district || 'Coimbatore'})</h3>
+        <div className="flex items-center gap-4">
+          <span className="text-sm text-gray-500">Last updated: Just now</span>
+          <button onClick={handleSaveToAdmin} className={`btn-primary flex items-center gap-2 text-sm ${isSynced ? 'bg-emerald-500 hover:bg-emerald-600' : ''}`}>
+            {isSynced ? <><CheckCircle className="w-4 h-4"/> Synced!</> : 'Sync to Admin'}
+          </button>
+        </div>
       </div>
 
       {/* Weather Alerts */}

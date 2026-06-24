@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Beaker, CloudRain, Sun, Wind, Thermometer, AlertTriangle, FileText, Download, X, Plus } from 'lucide-react';
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
@@ -21,7 +21,17 @@ const nutrientData = [
 
 const SoilWeatherTab = () => {
   const [activeTab, setActiveTab] = useState('Soil Nutrient Analysis');
-  
+  const [soilReports, setSoilReports] = useState([]);
+  const [adminWeatherData, setAdminWeatherData] = useState(null);
+
+  useEffect(() => {
+    const sr = localStorage.getItem('sams_soil_reports');
+    if (sr) setSoilReports(JSON.parse(sr));
+
+    const wd = localStorage.getItem('sams_weather_data');
+    if (wd) setAdminWeatherData(JSON.parse(wd));
+  }, []);
+
   const [alerts, setAlerts] = useState([
     { id: 1, type: 'danger', title: 'Severe Heatwave Warning', message: 'Temperatures expected to exceed 40°C in the Southern District. Advise farmers to increase irrigation frequency.', time: '2 hours ago' },
     { id: 2, type: 'warning', title: 'Unseasonal Rainfall Prediction', message: 'Light to moderate showers expected in Northern regions over the weekend. May impact harvest activities.', time: '1 day ago' },
@@ -53,20 +63,25 @@ const SoilWeatherTab = () => {
 
       {activeTab === 'Weather Monitoring' && (
         <div className="space-y-6">
+          {adminWeatherData && (
+            <div className="bg-blue-50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 p-4 rounded-lg text-sm">
+              <span className="font-bold">Live Data Sync:</span> Weather data recently synced from User Dashboard ({adminWeatherData.farmName}, {adminWeatherData.district}) at {new Date(adminWeatherData.dateSynced).toLocaleString()}
+            </div>
+          )}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="card text-center p-6 border-t-4 border-yellow-400">
               <Sun className="w-8 h-8 text-yellow-500 mx-auto mb-2" />
-              <p className="text-2xl font-bold">32°C</p>
+              <p className="text-2xl font-bold">{adminWeatherData?.current?.temp || 32}°C</p>
               <p className="text-gray-500 text-sm">Avg Temperature</p>
             </div>
             <div className="card text-center p-6 border-t-4 border-blue-400">
               <CloudRain className="w-8 h-8 text-blue-500 mx-auto mb-2" />
-              <p className="text-2xl font-bold">65%</p>
+              <p className="text-2xl font-bold">{adminWeatherData?.current?.humidity || 65}%</p>
               <p className="text-gray-500 text-sm">Avg Humidity</p>
             </div>
             <div className="card text-center p-6 border-t-4 border-gray-400">
               <Wind className="w-8 h-8 text-gray-500 mx-auto mb-2" />
-              <p className="text-2xl font-bold">14 km/h</p>
+              <p className="text-2xl font-bold">{adminWeatherData?.current?.wind || 14} km/h</p>
               <p className="text-gray-500 text-sm">Wind Speed</p>
             </div>
             <div className="card text-center p-6 border-t-4 border-red-400">
@@ -79,7 +94,7 @@ const SoilWeatherTab = () => {
             <h4 className="font-bold mb-4">Regional Weather Trends</h4>
             <div className="h-64 mt-4">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={forecastData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <AreaChart data={adminWeatherData?.forecast || forecastData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <defs>
                     <linearGradient id="colorTemp" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.8}/>
@@ -154,17 +169,23 @@ const SoilWeatherTab = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-800 text-sm">
-              {[1, 2, 3].map(i => (
-                <tr key={i} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                  <td className="p-4 font-medium">#ST-2025-{100+i}</td>
-                  <td className="p-4">North Acre / John Doe</td>
-                  <td className="p-4 text-gray-500">2025-06-1{i}</td>
-                  <td className="p-4"><span className="text-green-600 font-bold">8{i}/100</span></td>
-                  <td className="p-4 text-right">
-                    <button className="text-agri-green flex items-center gap-1 justify-end w-full"><Download className="w-4 h-4"/> PDF</button>
-                  </td>
+              {soilReports.length > 0 ? (
+                soilReports.map(report => (
+                  <tr key={report.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                    <td className="p-4 font-medium">{report.id}</td>
+                    <td className="p-4">{report.farmName} / {report.owner}</td>
+                    <td className="p-4 text-gray-500">{report.date}</td>
+                    <td className="p-4"><span className="text-green-600 font-bold">{report.score}/100</span></td>
+                    <td className="p-4 text-right">
+                      <button className="text-agri-green flex items-center gap-1 justify-end w-full"><Download className="w-4 h-4"/> PDF</button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="5" className="p-8 text-center text-gray-500">No soil test reports synced yet.</td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>

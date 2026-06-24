@@ -4,33 +4,112 @@ import { Map, Sprout, Leaf, MapPin, Target, Calendar, CheckCircle, Clock, X } fr
 const FarmCropManagementTab = () => {
   const [activeTab, setActiveTab] = useState('Farm Records');
 
-  const farms = [
-    { id: 1, name: 'North Acre', owner: 'John Doe', area: '10 Acres', location: 'Coimbatore', status: 'Active' },
-    { id: 2, name: 'East Valley', owner: 'Alice Smith', area: '5 Acres', location: 'Pollachi', status: 'Active' },
-  ];
+  const [farms, setFarms] = useState(() => {
+    const mockData = [
+      { id: 'mock-1', name: 'North Acre', owner: 'John Doe', area: '10 Acres', location: 'Coimbatore', status: 'Active' },
+      { id: 'mock-2', name: 'East Valley', owner: 'Alice Smith', area: '5 Acres', location: 'Pollachi', status: 'Active' },
+    ];
+    
+    // Load from user dashboard
+    const savedUserFarms = localStorage.getItem('sams_user_farms');
+    const userFarms = savedUserFarms ? JSON.parse(savedUserFarms) : [];
+    
+    // Get current user if available to set as owner
+    const currentUser = localStorage.getItem('sams_current_user');
+    const ownerName = currentUser ? JSON.parse(currentUser).name : 'Registered Farmer';
+    
+    const mappedUserFarms = userFarms.map(f => ({
+      id: f.id,
+      name: f.name,
+      owner: ownerName,
+      area: `${f.area} Acres`,
+      location: f.district,
+      status: 'Active'
+    }));
 
-  const crops = [
-    { id: 1, farm: 'North Acre', crop: 'Tomato', planted: '2025-05-10', stage: 'Flowering', harvestEst: '2025-08-10' },
-    { id: 2, farm: 'East Valley', crop: 'Cotton', planted: '2025-06-01', stage: 'Seedling', harvestEst: '2025-11-01' },
-  ];
+    // Prevent duplicates if mockData already has 'North Acre' and user also has it by default
+    const existingNames = new Set(mappedUserFarms.map(f => f.name));
+    const filteredMock = mockData.filter(m => !existingNames.has(m.name));
 
-  const fields = [
-    { id: 'F1-A', farm: 'North Acre', area: '4 Acres', soil: 'Red Soil', status: 'Planted' },
-    { id: 'F1-B', farm: 'North Acre', area: '6 Acres', soil: 'Red Soil', status: 'Fallow' },
-    { id: 'F2-A', farm: 'East Valley', area: '5 Acres', soil: 'Black Soil', status: 'Planted' },
-  ];
+    return [...filteredMock, ...mappedUserFarms];
+  });
 
-  const lifecycles = [
-    { id: 1, crop: 'Tomato', farm: 'North Acre', currentStage: 'Flowering', progress: 60, health: 'Good' },
-    { id: 2, crop: 'Cotton', farm: 'East Valley', currentStage: 'Seedling', progress: 15, health: 'Excellent' },
-  ];
+  const [crops, setCrops] = useState(() => {
+    const baseCrops = [
+      { id: 1, farm: 'North Acre', crop: 'Tomato', planted: '2025-05-10', stage: 'Flowering', harvestEst: '2025-08-10' },
+      { id: 2, farm: 'East Valley', crop: 'Cotton', planted: '2025-06-01', stage: 'Seedling', harvestEst: '2025-11-01' },
+    ];
+    const savedUserFarms = localStorage.getItem('sams_user_farms');
+    const userFarms = savedUserFarms ? JSON.parse(savedUserFarms) : [];
+    const userCrops = userFarms.map((f, i) => ({
+      id: `uc-${i}`,
+      farm: f.name,
+      crop: f.crops && f.crops.length > 0 ? f.crops[0] : 'Paddy',
+      planted: '2025-06-15',
+      stage: 'Vegetative',
+      harvestEst: '2025-10-15'
+    }));
+    return [...baseCrops, ...userCrops];
+  });
 
-  const initialHarvests = [
-    { id: 1, crop: 'Tomato', farm: 'North Acre', estDate: '2025-08-10', estYield: '12 Tons', status: 'Approaching' },
-    { id: 2, crop: 'Cotton', farm: 'East Valley', estDate: '2025-11-01', estYield: '8 Tons', status: 'Growing' },
-  ];
+  const [fields, setFields] = useState(() => {
+    const baseFields = [
+      { id: 'F1-A', farm: 'North Acre', area: '4 Acres', soil: 'Red Soil', status: 'Planted' },
+      { id: 'F1-B', farm: 'North Acre', area: '6 Acres', soil: 'Red Soil', status: 'Fallow' },
+      { id: 'F2-A', farm: 'East Valley', area: '5 Acres', soil: 'Black Soil', status: 'Planted' },
+    ];
+    const savedUserFarms = localStorage.getItem('sams_user_farms');
+    const userFarms = savedUserFarms ? JSON.parse(savedUserFarms) : [];
+    const userFields = userFarms.flatMap((f, i) => {
+      const totalArea = parseFloat(f.area) || 5;
+      const area1 = Math.max(1, (totalArea * 0.6).toFixed(1));
+      const area2 = Math.max(0.5, (totalArea - area1).toFixed(1));
+      return [
+        { id: `UF${i}-A`, farm: f.name, area: `${area1} Acres`, soil: f.soilType || 'Loamy Soil', status: 'Planted' },
+        { id: `UF${i}-B`, farm: f.name, area: `${area2} Acres`, soil: f.soilType || 'Loamy Soil', status: 'Fallow' }
+      ];
+    });
+    return [...baseFields, ...userFields];
+  });
 
-  const [harvestsData, setHarvestsData] = useState(initialHarvests);
+  const [lifecycles, setLifecycles] = useState(() => {
+    const baseLifecycles = [
+      { id: 1, crop: 'Tomato', farm: 'North Acre', currentStage: 'Flowering', progress: 60, health: 'Good' },
+      { id: 2, crop: 'Cotton', farm: 'East Valley', currentStage: 'Seedling', progress: 15, health: 'Excellent' },
+    ];
+    const savedUserFarms = localStorage.getItem('sams_user_farms');
+    const userFarms = savedUserFarms ? JSON.parse(savedUserFarms) : [];
+    const userLifecycles = userFarms.map((f, i) => ({
+      id: `ul-${i}`,
+      crop: f.crops && f.crops.length > 0 ? f.crops[0] : 'Paddy',
+      farm: f.name,
+      currentStage: 'Vegetative',
+      progress: 40,
+      health: 'Good'
+    }));
+    return [...baseLifecycles, ...userLifecycles];
+  });
+
+  const [harvestsData, setHarvestsData] = useState(() => {
+    const baseHarvests = [
+      { id: 1, crop: 'Tomato', farm: 'North Acre', estDate: '2025-08-10', estYield: '12 Tons', status: 'Approaching' },
+      { id: 2, crop: 'Cotton', farm: 'East Valley', estDate: '2025-11-01', estYield: '8 Tons', status: 'Growing' },
+    ];
+    const savedUserFarms = localStorage.getItem('sams_user_farms');
+    const userFarms = savedUserFarms ? JSON.parse(savedUserFarms) : [];
+    const userHarvests = userFarms.map((f, i) => {
+      const area = parseFloat(f.area) || 5;
+      return {
+        id: `uh-${i}`,
+        crop: f.crops && f.crops.length > 0 ? f.crops[0] : 'Paddy',
+        farm: f.name,
+        estDate: '2025-10-15',
+        estYield: `${Math.max(2, Math.floor(area * 1.5))} Tons`,
+        status: 'Growing'
+      };
+    });
+    return [...baseHarvests, ...userHarvests];
+  });
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
   const [selectedHarvest, setSelectedHarvest] = useState(null);
   const [logData, setLogData] = useState({ actualYield: '', harvestDate: '', quality: 'A Grade' });
@@ -86,7 +165,12 @@ const FarmCropManagementTab = () => {
               <p className="text-sm text-gray-500 mb-2 flex items-center gap-2"><Map className="w-4 h-4"/> {farm.area}</p>
               <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800 flex justify-between items-center">
                 <span className="text-sm font-medium">Owner: {farm.owner}</span>
-                <button className="text-agri-green text-sm font-medium hover:underline">View Fields</button>
+                <button 
+                  onClick={() => setActiveTab('Field Management')}
+                  className="text-agri-green text-sm font-medium hover:underline"
+                >
+                  View Fields
+                </button>
               </div>
             </div>
           ))}

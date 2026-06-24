@@ -28,24 +28,57 @@ const weatherReportData = [
   { month: 'April', avgTemp: '34°C', rainfall: '15mm', humidity: '45%' },
 ];
 
+const farmerReportData = [
+  { id: 'FRM-101', name: 'John Doe', region: 'North', yield: '14.5 Tons', status: 'Top Performer' },
+  { id: 'FRM-102', name: 'Alice Smith', region: 'South', yield: '12.0 Tons', status: 'Average' },
+  { id: 'FRM-103', name: 'Bob Johnson', region: 'East', yield: '8.2 Tons', status: 'Needs Support' },
+];
+
 const ReportsAnalyticsTab = () => {
   const [activeTab, setActiveTab] = useState('Crop Performance');
 
   const tabs = ['Crop Performance', 'Yield Reports', 'Farmer Reports', 'Soil Reports', 'Weather Reports'];
 
   const handleDownload = (format) => {
-    const reportContent = `--- ${activeTab} Report ---\n\nFormat: ${format.toUpperCase()}\nGenerated on: ${new Date().toLocaleString()}\n\nThis is an automatically generated ${format} export for ${activeTab}.`;
+    if (format === 'pdf') {
+      window.print();
+      return;
+    }
+
+    let reportContent = '';
+    let mimeType = 'text/csv;charset=utf-8;';
+    let extension = 'csv';
+
+    if (activeTab === 'Crop Performance') {
+      reportContent += 'Crop,Target Yield,Actual Yield\n';
+      cropPerformanceData.forEach(r => reportContent += `${r.name},${r.target},${r.actual}\n`);
+    } else if (activeTab === 'Yield Reports') {
+      reportContent += 'Report ID,Crop,Season,Total Area,Total Yield,Variance\n';
+      yieldReportData.forEach(r => reportContent += `${r.id},${r.crop},${r.season},${r.area},${r.totalYield},${r.variance}\n`);
+    } else if (activeTab === 'Farmer Reports') {
+      reportContent += 'Farmer ID,Name,Region,Yield,Status\n';
+      farmerReportData.forEach(r => reportContent += `${r.id},${r.name},${r.region},${r.yield},${r.status}\n`);
+    } else if (activeTab === 'Soil Reports') {
+      reportContent += 'Test ID,Region,pH,Nitrogen,Phosphorus,Moisture\n';
+      soilReportData.forEach(r => reportContent += `${r.testId},${r.region},${r.ph},${r.nitrogen},${r.phosphorus},${r.moisture}\n`);
+    } else if (activeTab === 'Weather Reports') {
+      reportContent += 'Month,Avg Temp,Rainfall,Humidity\n';
+      weatherReportData.forEach(r => reportContent += `${r.month},${r.avgTemp},${r.rainfall},${r.humidity}\n`);
+    }
     
-    const blob = new Blob([reportContent], { type: 'text/plain' });
+    const blob = new Blob([reportContent], { type: mimeType });
     const url = URL.createObjectURL(blob);
     
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${activeTab.replace(/\s+/g, '_').toLowerCase()}_report.${format}`;
+    a.style.display = 'none';
+    a.download = `${activeTab.replace(/\s+/g, '_').toLowerCase()}_report.${extension}`;
     document.body.appendChild(a);
     a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    setTimeout(() => {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 100);
   };
 
   return (
@@ -53,10 +86,7 @@ const ReportsAnalyticsTab = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Reports & Analytics</h2>
         <div className="flex gap-2 w-full sm:w-auto">
-          <button className="flex-1 sm:flex-none btn-outline flex items-center justify-center gap-2 text-sm bg-white dark:bg-gray-800">
-            <Filter className="w-4 h-4"/> Filter
-          </button>
-          <div className="flex gap-1 flex-1 sm:flex-none">
+          <div className="flex gap-2 flex-1 sm:flex-none">
             <button onClick={() => handleDownload('pdf')} className="flex-1 sm:flex-none btn-primary flex items-center justify-center gap-2 text-sm">
               <Download className="w-4 h-4"/> PDF
             </button>
@@ -118,11 +148,7 @@ const ReportsAnalyticsTab = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-800 text-sm">
-              {[
-                { id: 'FRM-101', name: 'John Doe', region: 'North', yield: '14.5 Tons', status: 'Top Performer' },
-                { id: 'FRM-102', name: 'Alice Smith', region: 'South', yield: '12.0 Tons', status: 'Average' },
-                { id: 'FRM-103', name: 'Bob Johnson', region: 'East', yield: '8.2 Tons', status: 'Needs Support' },
-              ].map(farmer => (
+              {farmerReportData.map(farmer => (
                 <tr key={farmer.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
                   <td className="p-4 font-mono text-gray-500">{farmer.id}</td>
                   <td className="p-4 font-medium">{farmer.name}</td>

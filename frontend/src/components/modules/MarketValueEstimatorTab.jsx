@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { IndianRupee, Calculator, TrendingUp, Sprout, Tag, Truck, Save, ArrowRight, Activity, TrendingDown, Minus } from 'lucide-react';
+import { IndianRupee, Calculator, TrendingUp, Sprout, Tag, Truck, Save, ArrowRight, Activity, TrendingDown, Minus, Eye, X, Clock } from 'lucide-react';
+
+const ESTIMATOR_KEY = 'sams_market_estimates';
 
 const cropsList = [
   "Groundnut", "Paddy", "Rice", "Sugarcane", "Cotton", "Tomato", "Potato", 
@@ -9,30 +11,38 @@ const cropsList = [
 
 // Mock Database for Market Intelligence
 const marketData = {
-  "Groundnut": { price: 80, unit: "Kilogram (Kg)", gst: 2, discount: 5, yieldPerAcre: 1000, demand: "High", trend: "Rising" },
-  "Paddy": { price: 25, unit: "Kilogram (Kg)", gst: 0, discount: 2, yieldPerAcre: 2000, demand: "Very High", trend: "Stable" },
+  "Groundnut": { price: 80, unit: "Kilogram (Kg)", gst: 5, discount: 5, yieldPerAcre: 1000, demand: "High", trend: "Rising" },
+  "Paddy": { price: 25, unit: "Kilogram (Kg)", gst: 5, discount: 2, yieldPerAcre: 2000, demand: "Very High", trend: "Stable" },
   "Rice": { price: 60, unit: "Kilogram (Kg)", gst: 5, discount: 3, yieldPerAcre: 1500, demand: "Very High", trend: "Rising" },
-  "Sugarcane": { price: 3000, unit: "Ton", gst: 0, discount: 0, yieldPerAcre: 40, demand: "High", trend: "Stable" },
+  "Sugarcane": { price: 3000, unit: "Ton", gst: 5, discount: 0, yieldPerAcre: 40, demand: "High", trend: "Stable" },
   "Cotton": { price: 7000, unit: "Quintal", gst: 5, discount: 2, yieldPerAcre: 10, demand: "High", trend: "Rising" },
-  "Tomato": { price: 40, unit: "Kilogram (Kg)", gst: 0, discount: 10, yieldPerAcre: 15000, demand: "Moderate", trend: "Volatile" },
-  "Potato": { price: 30, unit: "Kilogram (Kg)", gst: 0, discount: 5, yieldPerAcre: 12000, demand: "High", trend: "Rising" },
-  "Onion": { price: 50, unit: "Kilogram (Kg)", gst: 0, discount: 8, yieldPerAcre: 10000, demand: "High", trend: "Volatile" },
-  "Carrot": { price: 60, unit: "Kilogram (Kg)", gst: 0, discount: 5, yieldPerAcre: 8000, demand: "Moderate", trend: "Stable" },
-  "Brinjal": { price: 35, unit: "Kilogram (Kg)", gst: 0, discount: 5, yieldPerAcre: 10000, demand: "Moderate", trend: "Stable" },
+  "Tomato": { price: 40, unit: "Kilogram (Kg)", gst: 5, discount: 10, yieldPerAcre: 15000, demand: "Moderate", trend: "Volatile" },
+  "Potato": { price: 30, unit: "Kilogram (Kg)", gst: 5, discount: 5, yieldPerAcre: 12000, demand: "High", trend: "Rising" },
+  "Onion": { price: 50, unit: "Kilogram (Kg)", gst: 5, discount: 8, yieldPerAcre: 10000, demand: "High", trend: "Volatile" },
+  "Carrot": { price: 60, unit: "Kilogram (Kg)", gst: 5, discount: 5, yieldPerAcre: 8000, demand: "Moderate", trend: "Stable" },
+  "Brinjal": { price: 35, unit: "Kilogram (Kg)", gst: 5, discount: 5, yieldPerAcre: 10000, demand: "Moderate", trend: "Stable" },
   "Chilli": { price: 120, unit: "Kilogram (Kg)", gst: 5, discount: 2, yieldPerAcre: 2000, demand: "High", trend: "Rising" },
-  "Maize": { price: 22, unit: "Kilogram (Kg)", gst: 0, discount: 2, yieldPerAcre: 2500, demand: "High", trend: "Stable" },
-  "Millets": { price: 45, unit: "Kilogram (Kg)", gst: 0, discount: 3, yieldPerAcre: 1200, demand: "Moderate", trend: "Rising" },
-  "Banana": { price: 25, unit: "Kilogram (Kg)", gst: 0, discount: 5, yieldPerAcre: 15000, demand: "High", trend: "Stable" },
-  "Coconut": { price: 30, unit: "Piece", gst: 0, discount: 0, yieldPerAcre: 8000, demand: "High", trend: "Rising" },
-  "Mango": { price: 100, unit: "Kilogram (Kg)", gst: 0, discount: 5, yieldPerAcre: 4000, demand: "Very High", trend: "Rising" },
-  "Other Crops": { price: 50, unit: "Kilogram (Kg)", gst: 2, discount: 5, yieldPerAcre: 1000, demand: "Moderate", trend: "Stable" }
+  "Maize": { price: 22, unit: "Kilogram (Kg)", gst: 5, discount: 2, yieldPerAcre: 2500, demand: "High", trend: "Stable" },
+  "Millets": { price: 45, unit: "Kilogram (Kg)", gst: 5, discount: 3, yieldPerAcre: 1200, demand: "Moderate", trend: "Rising" },
+  "Banana": { price: 25, unit: "Kilogram (Kg)", gst: 5, discount: 5, yieldPerAcre: 15000, demand: "High", trend: "Stable" },
+  "Coconut": { price: 30, unit: "Piece", gst: 5, discount: 0, yieldPerAcre: 8000, demand: "High", trend: "Rising" },
+  "Mango": { price: 100, unit: "Kilogram (Kg)", gst: 5, discount: 5, yieldPerAcre: 4000, demand: "Very High", trend: "Rising" },
+  "Other Crops": { price: 50, unit: "Kilogram (Kg)", gst: 5, discount: 5, yieldPerAcre: 1000, demand: "Moderate", trend: "Stable" }
 };
 
 const MarketValueEstimatorTab = ({ activeFarm }) => {
   const [selectedCrop, setSelectedCrop] = useState('');
   const [quantity, setQuantity] = useState('');
-  const [transportation, setTransportation] = useState('');
+  const [unit, setUnit] = useState('Kg');
+  const [manualCropName, setManualCropName] = useState('');
   const [isSaved, setIsSaved] = useState(false);
+  const [savedEstimates, setSavedEstimates] = useState([]);
+  const [viewingEstimate, setViewingEstimate] = useState(null);
+
+  useEffect(() => {
+    const stored = localStorage.getItem(ESTIMATOR_KEY);
+    if (stored) setSavedEstimates(JSON.parse(stored));
+  }, []);
 
   // Auto-fill from AI Recommendation if available
   useEffect(() => {
@@ -56,8 +66,19 @@ const MarketValueEstimatorTab = ({ activeFarm }) => {
   const currentMarketData = selectedCrop ? (marketData[selectedCrop] || marketData["Other Crops"]) : null;
 
   // Calculations
-  const qty = parseFloat(quantity) || 0;
-  const transportCost = parseFloat(transportation) || 0;
+  const inputQty = parseFloat(quantity) || 0;
+  let calcQty = inputQty;
+
+  // Convert quantity to base unit (Kg or Piece) for calculation if necessary
+  if (currentMarketData) {
+    if (unit === 'Gram' && currentMarketData.unit === 'Kilogram (Kg)') {
+      calcQty = inputQty / 1000;
+    } else if (unit === 'Kg' && currentMarketData.unit === 'Quintal') {
+      calcQty = inputQty / 100;
+    } else if (unit === 'Kg' && currentMarketData.unit === 'Ton') {
+      calcQty = inputQty / 1000;
+    }
+  }
   
   let subtotal = 0;
   let discountAmount = 0;
@@ -66,15 +87,11 @@ const MarketValueEstimatorTab = ({ activeFarm }) => {
   let finalAmount = 0;
 
   if (currentMarketData) {
-    subtotal = qty * currentMarketData.price;
+    subtotal = calcQty * currentMarketData.price;
     discountAmount = subtotal * (currentMarketData.discount / 100);
     afterDiscount = subtotal - discountAmount;
     gstAmount = afterDiscount * (currentMarketData.gst / 100);
-    finalAmount = afterDiscount + gstAmount - transportCost; // Revenue estimation, transportation is usually deducted from profit if paid by farmer, or added if charging buyer. Assuming transportation is a cost that reduces final revenue, or an extra charge. The prompt: Final Amount = Subtotal - Discount Amount + GST Amount + Transportation Cost. Wait, prompt says: "Final Amount = Subtotal - Discount Amount + GST Amount + Transportation Cost". So we add it.
-  }
-  
-  if (currentMarketData) {
-     finalAmount = afterDiscount + gstAmount + transportCost;
+    finalAmount = afterDiscount + gstAmount;
   }
 
   const getTrendIcon = (trend) => {
@@ -86,9 +103,31 @@ const MarketValueEstimatorTab = ({ activeFarm }) => {
 
   const handleSave = () => {
     setIsSaved(true);
+    
+    const cropName = selectedCrop === 'Other Crops' && manualCropName ? manualCropName : selectedCrop;
+    
+    const newEstimate = {
+      id: Date.now(),
+      cropName,
+      quantity: inputQty,
+      unit,
+      calcQty,
+      marketData: currentMarketData,
+      subtotal,
+      discountAmount,
+      gstAmount,
+      finalAmount,
+      savedAt: new Date().toISOString()
+    };
+    
+    const stored = localStorage.getItem(ESTIMATOR_KEY);
+    const existing = stored ? JSON.parse(stored) : [];
+    const updated = [newEstimate, ...existing].slice(0, 20);
+    localStorage.setItem(ESTIMATOR_KEY, JSON.stringify(updated));
+    setSavedEstimates(updated);
+
     setTimeout(() => {
       setIsSaved(false);
-      alert('Estimation saved successfully to Reports & History!');
     }, 1500);
   };
 
@@ -125,23 +164,41 @@ const MarketValueEstimatorTab = ({ activeFarm }) => {
                     <Sprout className="w-3 h-3"/> AI suggests selecting {activeFarm.aiReport.bestCrop.name}
                   </p>
                 )}
+                {selectedCrop === 'Other Crops' && (
+                  <div className="mt-4">
+                    <label className="label-text">Manual Crop Name</label>
+                    <input 
+                      type="text" 
+                      value={manualCropName} 
+                      onChange={(e) => setManualCropName(e.target.value)} 
+                      className="input-field mt-1" 
+                      placeholder="Enter crop name manually" 
+                    />
+                  </div>
+                )}
               </div>
               
-              <div>
+              <div className="md:col-span-2">
                 <label className="label-text">Quantity Sold</label>
-                <div className="relative">
-                  <input type="number" value={quantity} onChange={(e) => setQuantity(e.target.value)} disabled={!selectedCrop} className="input-field mt-1 pr-24" placeholder="e.g. 100" />
-                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 text-sm font-semibold bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
-                    {currentMarketData ? currentMarketData.unit : 'Unit'}
-                  </span>
-                </div>
-              </div>
-
-              <div>
-                <label className="label-text">Transportation Cost (₹)</label>
-                <div className="relative">
-                  <Truck className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-                  <input type="number" value={transportation} onChange={(e) => setTransportation(e.target.value)} disabled={!selectedCrop} className="input-field mt-1 pl-12" placeholder="e.g. 200" />
+                <div className="relative flex gap-2 mt-1">
+                  <input 
+                    type="number" 
+                    value={quantity} 
+                    onChange={(e) => setQuantity(e.target.value)} 
+                    disabled={!selectedCrop} 
+                    className="input-field flex-1" 
+                    placeholder="e.g. 100" 
+                  />
+                  <select 
+                    value={unit} 
+                    onChange={(e) => setUnit(e.target.value)} 
+                    disabled={!selectedCrop}
+                    className="input-field w-32 bg-gray-50 dark:bg-gray-800 font-semibold"
+                  >
+                    <option value="Pieces">Pieces</option>
+                    <option value="Kg">Kg</option>
+                    <option value="Gram">Gram</option>
+                  </select>
                 </div>
               </div>
             </div>
@@ -206,11 +263,11 @@ const MarketValueEstimatorTab = ({ activeFarm }) => {
             <div className="space-y-4 text-sm mb-6">
               <div className="flex justify-between items-center text-gray-300">
                 <span>Selected Crop</span>
-                <span className="font-bold text-white">{selectedCrop || '-'}</span>
+                <span className="font-bold text-white">{selectedCrop === 'Other Crops' && manualCropName ? manualCropName : (selectedCrop || '-')}</span>
               </div>
               <div className="flex justify-between items-center text-gray-300">
                 <span>Quantity</span>
-                <span className="font-bold text-white">{qty ? `${qty} ${currentMarketData?.unit.split(' ')[0] || ''}` : '-'}</span>
+                <span className="font-bold text-white">{inputQty ? `${inputQty} ${unit}` : '-'}</span>
               </div>
               <div className="flex justify-between items-center text-gray-300">
                 <span>Market Unit Price</span>
@@ -231,10 +288,6 @@ const MarketValueEstimatorTab = ({ activeFarm }) => {
                 <span>GST ({currentMarketData?.gst || 0}%)</span>
                 <span>+ ₹{gstAmount.toFixed(2)}</span>
               </div>
-              <div className="flex justify-between items-center text-orange-400">
-                <span>Transportation</span>
-                <span>+ ₹{transportCost.toFixed(2)}</span>
-              </div>
             </div>
 
             <div className="pt-4 border-t border-gray-700 mb-8">
@@ -244,9 +297,9 @@ const MarketValueEstimatorTab = ({ activeFarm }) => {
 
             <button 
               onClick={handleSave}
-              disabled={!selectedCrop || !qty}
+              disabled={!selectedCrop || !inputQty}
               className={`w-full py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all ${
-                (!selectedCrop || !qty) ? 'bg-gray-800 text-gray-500 cursor-not-allowed' :
+                (!selectedCrop || !inputQty) ? 'bg-gray-800 text-gray-500 cursor-not-allowed' :
                 isSaved 
                 ? 'bg-emerald-500 text-white hover:bg-emerald-600 shadow-emerald-500/50' 
                 : 'bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/30'
@@ -262,6 +315,88 @@ const MarketValueEstimatorTab = ({ activeFarm }) => {
         </div>
 
       </div>
+
+      {/* Saved Estimates History */}
+      {savedEstimates.length > 0 && (
+        <div className="card p-0 overflow-hidden mt-6">
+          <div className="p-5 border-b border-gray-100 dark:border-gray-800 flex items-center gap-2">
+            <Clock className="w-5 h-5 text-blue-600"/>
+            <h3 className="font-bold text-lg">Saved Market Estimates</h3>
+            <span className="ml-auto bg-blue-100 text-blue-700 text-xs font-bold px-2 py-1 rounded-full">{savedEstimates.length} saved</span>
+          </div>
+          <div className="divide-y divide-gray-100 dark:divide-gray-800">
+            {savedEstimates.map((est) => (
+              <div key={est.id} className="flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                <div>
+                  <p className="font-semibold text-gray-800 dark:text-gray-200">
+                    {est.cropName} • {est.quantity} {est.unit}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-0.5">{new Date(est.savedAt).toLocaleString()}</p>
+                </div>
+                <div className="flex items-center gap-4">
+                  <span className="font-bold text-emerald-600">₹{est.finalAmount.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                  <button onClick={() => setViewingEstimate(est)} className="btn-outline py-1 px-3 text-xs flex items-center gap-1">
+                    <Eye className="w-3.5 h-3.5"/> View Details
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* View Details Modal */}
+      {viewingEstimate && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setViewingEstimate(null)}>
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-lg" onClick={e => e.stopPropagation()}>
+            <div className="sticky top-0 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 p-5 flex items-center justify-between rounded-t-2xl">
+              <div>
+                <h3 className="text-xl font-bold">Market Estimate Details</h3>
+                <p className="text-xs text-gray-500">{new Date(viewingEstimate.savedAt).toLocaleString()}</p>
+              </div>
+              <button onClick={() => setViewingEstimate(null)} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"><X className="w-5 h-5"/></button>
+            </div>
+            <div className="p-6 space-y-6">
+              <div className="flex justify-between items-center bg-gray-50 dark:bg-gray-800 p-4 rounded-xl">
+                <div>
+                  <p className="text-xs text-gray-500 uppercase">Crop</p>
+                  <p className="font-bold text-lg">{viewingEstimate.cropName}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs text-gray-500 uppercase">Quantity</p>
+                  <p className="font-bold text-lg">{viewingEstimate.quantity} {viewingEstimate.unit}</p>
+                </div>
+              </div>
+              
+              <div className="space-y-3">
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-gray-500">Market Price ({viewingEstimate.marketData?.unit})</span>
+                  <span className="font-semibold">₹{viewingEstimate.marketData?.price}</span>
+                </div>
+                <div className="flex justify-between items-center text-sm pt-2 border-t border-gray-100 dark:border-gray-800">
+                  <span className="text-gray-500">Subtotal</span>
+                  <span className="font-semibold">₹{viewingEstimate.subtotal.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between items-center text-sm text-red-500">
+                  <span>Discount ({viewingEstimate.marketData?.discount}%)</span>
+                  <span>- ₹{viewingEstimate.discountAmount.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between items-center text-sm text-yellow-600 dark:text-yellow-500">
+                  <span>GST ({viewingEstimate.marketData?.gst}%)</span>
+                  <span>+ ₹{viewingEstimate.gstAmount.toFixed(2)}</span>
+                </div>
+              </div>
+              
+              <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                <p className="text-gray-500 text-xs uppercase mb-1">Final Estimated Revenue</p>
+                <h2 className="text-3xl font-black text-emerald-600 dark:text-emerald-400">
+                  ₹{viewingEstimate.finalAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </h2>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

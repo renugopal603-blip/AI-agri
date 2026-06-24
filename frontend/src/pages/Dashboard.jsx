@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Leaf, Sun, Sprout, ClipboardList, TrendingUp, Settings, LogOut, Bell, Droplets, User, FileText, BellRing, Beaker, Brain, DollarSign } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -19,10 +19,17 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('Dashboard');
   const [profileName, setProfileName] = useState('John Farmer');
   const [profileEmail, setProfileEmail] = useState('farmer@sams.com');
-  const [farms, setFarms] = useState([
-    { id: 1, name: 'North Acre', district: 'Coimbatore', area: 10, soil: 'Red Soil', season: 'Summer', water: 'Medium', irrigation: 'Drip Irrigation', cropName: 'Tomato', plantingDate: '2025-06-01' }
-  ]);
+  const [farms, setFarms] = useState(() => {
+    const saved = localStorage.getItem('sams_user_farms');
+    return saved ? JSON.parse(saved) : [
+      { id: 1, name: 'North Acre', district: 'Coimbatore', area: 10, soil: 'Red Soil', season: 'Summer', water: 'Medium', irrigation: 'Drip Irrigation', cropName: 'Tomato', plantingDate: '2025-06-01' }
+    ];
+  });
   const [activeFarm, setActiveFarm] = useState(farms[0]);
+  
+  useEffect(() => {
+    localStorage.setItem('sams_user_farms', JSON.stringify(farms));
+  }, [farms]);
   const navigate = useNavigate();
 
   const handleLogout = () => {

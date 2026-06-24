@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
-import { Brain, RefreshCw, MapPin, Activity, ShieldAlert, Sprout, Calendar, Sun, Wind, Droplets, TrendingUp, IndianRupee, Lightbulb, AlertTriangle, Bug, FileText, Map } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Brain, RefreshCw, MapPin, Activity, ShieldAlert, Sprout, Calendar, Sun, Wind, Droplets, TrendingUp, IndianRupee, Lightbulb, AlertTriangle, Bug, FileText, Map, Eye, X, Clock } from 'lucide-react';
+
+const STORAGE_KEY = 'sams_ai_reports';
 
 const generateReport = (farm) => {
   const area = parseFloat(farm.area) || 1;
@@ -52,13 +54,32 @@ const generateReport = (farm) => {
 const AdvancedAiSuggestions = ({ activeFarm }) => {
   const [loading, setLoading] = useState(false);
   const [report, setReport] = useState(null);
+  const [savedReports, setSavedReports] = useState([]);
+  const [viewingReport, setViewingReport] = useState(null);
+
+  useEffect(() => {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) setSavedReports(JSON.parse(stored));
+  }, []);
 
   const runAnalysis = (e) => {
     if (e && e.preventDefault) e.preventDefault();
     if (!activeFarm) return;
     setLoading(true);
     setReport(null);
-    setTimeout(() => { setReport(generateReport(activeFarm)); setLoading(false); }, 1800);
+    setTimeout(() => {
+      const newReport = generateReport(activeFarm);
+      newReport.savedAt = new Date().toISOString();
+      newReport.farmName = activeFarm.name || 'Unknown Farm';
+      setReport(newReport);
+      setLoading(false);
+      // Save to localStorage
+      const stored = localStorage.getItem(STORAGE_KEY);
+      const existing = stored ? JSON.parse(stored) : [];
+      const updated = [newReport, ...existing].slice(0, 20);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      setSavedReports(updated);
+    }, 1800);
   };
 
   return (
@@ -339,6 +360,83 @@ const AdvancedAiSuggestions = ({ activeFarm }) => {
             <button type="button" onClick={runAnalysis} className="btn-outline flex items-center gap-2">
               <RefreshCw className="w-4 h-4"/> Re-run Analysis
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Saved Reports History */}
+      {savedReports.length > 0 && (
+        <div className="card p-0 overflow-hidden mt-6">
+          <div className="p-5 border-b border-gray-100 dark:border-gray-800 flex items-center gap-2">
+            <Clock className="w-5 h-5 text-agri-green"/>
+            <h3 className="font-bold text-lg">Saved AI Analysis Reports</h3>
+            <span className="ml-auto bg-agri-green/10 text-agri-green text-xs font-bold px-2 py-1 rounded-full">{savedReports.length} saved</span>
+          </div>
+          <div className="divide-y divide-gray-100 dark:divide-gray-800">
+            {savedReports.map((r, i) => (
+              <div key={i} className="flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                <div>
+                  <p className="font-semibold text-gray-800 dark:text-gray-200">{r.farmName} — <span className="text-agri-green">{r.bestCrop?.name}</span></p>
+                  <p className="text-xs text-gray-500 mt-0.5">{new Date(r.savedAt).toLocaleString()}</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs bg-green-100 text-green-700 font-bold px-2 py-1 rounded-full">Score: {r.bestCrop?.score}%</span>
+                  <button onClick={() => setViewingReport(r)} className="btn-outline py-1 px-3 text-xs flex items-center gap-1">
+                    <Eye className="w-3.5 h-3.5"/> View Details
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* View Details Modal */}
+      {viewingReport && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setViewingReport(null)}>
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="sticky top-0 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 p-5 flex items-center justify-between rounded-t-2xl z-10">
+              <div>
+                <h3 className="text-xl font-bold">{viewingReport.farmName} — AI Report</h3>
+                <p className="text-xs text-gray-500">{new Date(viewingReport.savedAt).toLocaleString()}</p>
+              </div>
+              <button onClick={() => setViewingReport(null)} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"><X className="w-5 h-5"/></button>
+            </div>
+            <div className="p-6 space-y-5">
+              <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl p-5">
+                <p className="text-xs font-bold text-green-600 uppercase mb-1">Best Recommended Crop</p>
+                <h2 className="text-4xl font-extrabold text-gray-900 dark:text-white">{viewingReport.bestCrop?.name}</h2>
+                <div className="flex gap-4 mt-2 text-sm">
+                  <span>Confidence: <strong>{viewingReport.bestCrop?.confidence}</strong></span>
+                  <span>Risk: <strong>{viewingReport.bestCrop?.risk}</strong></span>
+                  <span>Score: <strong>{viewingReport.bestCrop?.score}%</strong></span>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                {[['District', viewingReport.district], ['Soil', viewingReport.soil], ['Season', viewingReport.season], ['Water', viewingReport.waterLevel], ['Yield/Acre', `${viewingReport.yield?.perAcre} Kg`], ['Revenue', `₹${viewingReport.market?.revenue?.toLocaleString()}`]].map(([k, v]) => (
+                  <div key={k} className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">
+                    <p className="text-xs text-gray-500 mb-0.5">{k}</p>
+                    <p className="font-semibold">{v}</p>
+                  </div>
+                ))}
+              </div>
+              <div>
+                <p className="font-bold mb-2">Alternative Crops</p>
+                <div className="flex flex-wrap gap-2">
+                  {viewingReport.alternatives?.map(a => (
+                    <span key={a.name} className="bg-blue-50 border border-blue-200 text-blue-800 px-3 py-1 rounded-full text-sm">{a.name} ({a.score}%)</span>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <p className="font-bold mb-2">Smart Farming Tips</p>
+                <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
+                  {[['Best Sowing', viewingReport.tips?.sowMonth], ['Best Harvest', viewingReport.tips?.harvestMonth], ['Water', viewingReport.tips?.water], ['Soil', viewingReport.tips?.soil], ['Seasonal', viewingReport.tips?.seasonal]].map(([k, v]) => (
+                    <li key={k} className="flex gap-2"><AlertTriangle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5"/><span><strong>{k}:</strong> {v}</span></li>
+                  ))}
+                </ul>
+              </div>
+            </div>
           </div>
         </div>
       )}

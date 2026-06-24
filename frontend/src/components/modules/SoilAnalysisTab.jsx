@@ -24,8 +24,28 @@ const cropDetails = {
   'Pulses': { yield: 'Medium', water: 'Low', duration: '70-100 days', profit: 'High', description: 'Improves soil health by fixing nitrogen. Excellent choice for crop rotation.' }
 };
 
-const SoilAnalysisTab = () => {
+const SoilAnalysisTab = ({ activeFarm }) => {
   const [selectedCrop, setSelectedCrop] = useState(null);
+  const [isSynced, setIsSynced] = useState(false);
+
+  const handleSaveToAdmin = () => {
+    setIsSynced(true);
+    const newReport = {
+      id: `#ST-${new Date().getFullYear()}-${Math.floor(100 + Math.random() * 900)}`,
+      farmName: activeFarm?.name || 'North Acre',
+      owner: 'John Farmer',
+      date: new Date().toISOString().split('T')[0],
+      score: 85,
+    };
+    
+    const stored = localStorage.getItem('sams_soil_reports');
+    const existing = stored ? JSON.parse(stored) : [];
+    localStorage.setItem('sams_soil_reports', JSON.stringify([newReport, ...existing]));
+
+    setTimeout(() => {
+      setIsSynced(false);
+    }, 1500);
+  };
 
   const handleExport = () => {
     const reportText = `Soil Health Report\nDate: ${new Date().toLocaleDateString()}\nOverall Health: 85/100 (Excellent)\nPrimary Soil: Red Soil\npH Level: 6.5\nWarning: Low Potassium (K)\n\nNutrient Profile:\nNitrogen: 120/150\nPhosphorus: 98/150\nPotassium: 86/150\nOrganic Carbon: 99/150\nMoisture: 65/150`;
@@ -45,9 +65,14 @@ const SoilAnalysisTab = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center mb-2">
         <h3 className="text-xl font-bold">Soil Health & Analysis</h3>
-        <button onClick={handleExport} className="btn-outline flex items-center gap-2 text-sm">
-          <Download className="w-4 h-4"/> Export Report
-        </button>
+        <div className="flex gap-3">
+          <button onClick={handleSaveToAdmin} className={`btn-primary flex items-center gap-2 text-sm ${isSynced ? 'bg-emerald-500 hover:bg-emerald-600' : ''}`}>
+            {isSynced ? <><CheckCircle className="w-4 h-4"/> Synced!</> : 'Sync to Admin'}
+          </button>
+          <button onClick={handleExport} className="btn-outline flex items-center gap-2 text-sm">
+            <Download className="w-4 h-4"/> Export Report
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
