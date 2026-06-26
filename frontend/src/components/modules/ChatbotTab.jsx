@@ -221,3 +221,4 @@ const ChatbotTab = ({ activeFarm }) => {
 };
 
 export default ChatbotTab;
+// Trigger Vercel rebuild
