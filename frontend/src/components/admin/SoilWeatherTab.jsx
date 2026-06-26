@@ -2,22 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Beaker, CloudRain, Sun, Wind, Thermometer, AlertTriangle, FileText, Download, X, Plus } from 'lucide-react';
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
-const rainfallData = [
-  { month: 'Jan', mm: 45 }, { month: 'Feb', mm: 30 }, { month: 'Mar', mm: 60 },
-  { month: 'Apr', mm: 120 }, { month: 'May', mm: 150 }, { month: 'Jun', mm: 200 },
-];
+const rainfallData = [];
 
-const forecastData = [
-  { day: 'Mon', temp: 32 }, { day: 'Tue', temp: 33 }, { day: 'Wed', temp: 30 },
-  { day: 'Thu', temp: 29 }, { day: 'Fri', temp: 31 }, { day: 'Sat', temp: 34 }, { day: 'Sun', temp: 35 },
-];
+const forecastData = [];
 
-const nutrientData = [
-  { region: 'North', N: 120, P: 80, K: 90 },
-  { region: 'South', N: 90, P: 110, K: 85 },
-  { region: 'East', N: 105, P: 95, K: 100 },
-  { region: 'West', N: 115, P: 85, K: 95 },
-];
+const nutrientData = [];
 
 const SoilWeatherTab = () => {
   const [activeTab, setActiveTab] = useState('Soil Nutrient Analysis');
@@ -32,10 +21,7 @@ const SoilWeatherTab = () => {
     if (wd) setAdminWeatherData(JSON.parse(wd));
   }, []);
 
-  const [alerts, setAlerts] = useState([
-    { id: 1, type: 'danger', title: 'Severe Heatwave Warning', message: 'Temperatures expected to exceed 40°C in the Southern District. Advise farmers to increase irrigation frequency.', time: '2 hours ago' },
-    { id: 2, type: 'warning', title: 'Unseasonal Rainfall Prediction', message: 'Light to moderate showers expected in Northern regions over the weekend. May impact harvest activities.', time: '1 day ago' },
-  ]);
+  const [alerts, setAlerts] = useState([]);
 
   const dismissAlert = (id) => {
     setAlerts(alerts.filter(a => a.id !== id));

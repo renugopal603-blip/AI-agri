@@ -13,23 +13,23 @@ import AiCropAdvisorTab from '../components/modules/AiCropAdvisorTab';
 import AlertsNotificationsTab from '../components/modules/AlertsNotificationsTab';
 import ReportsHistoryTab from '../components/modules/ReportsHistoryTab';
 import MarketValueEstimatorTab from '../components/modules/MarketValueEstimatorTab';
+import ChatbotTab from '../components/modules/ChatbotTab';
 import SettingsTab from '../components/modules/SettingsTab';
+import { Bot } from 'lucide-react';
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('Dashboard');
-  const [profileName, setProfileName] = useState('John Farmer');
-  const [profileEmail, setProfileEmail] = useState('farmer@sams.com');
-  const [farms, setFarms] = useState(() => {
-    const saved = localStorage.getItem('sams_user_farms');
-    return saved ? JSON.parse(saved) : [
-      { id: 1, name: 'North Acre', district: 'Coimbatore', area: 10, soil: 'Red Soil', season: 'Summer', water: 'Medium', irrigation: 'Drip Irrigation', cropName: 'Tomato', plantingDate: '2025-06-01' }
-    ];
+  const [profileName, setProfileName] = useState(() => {
+    const info = JSON.parse(localStorage.getItem('userInfo') || '{}');
+    return info.name || 'Farmer';
   });
-  const [activeFarm, setActiveFarm] = useState(farms[0]);
-  
-  useEffect(() => {
-    localStorage.setItem('sams_user_farms', JSON.stringify(farms));
-  }, [farms]);
+  const [profileEmail, setProfileEmail] = useState(() => {
+    const info = JSON.parse(localStorage.getItem('userInfo') || '{}');
+    return info.email || '';
+  });
+  const [farms, setFarms] = useState([]);
+  const [activeFarm, setActiveFarm] = useState(null);
+
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -44,6 +44,7 @@ const Dashboard = () => {
     { name: 'AI Crop Advisor', icon: <Brain className="w-5 h-5"/> },
     { name: 'Irrigation', icon: <Droplets className="w-5 h-5"/> },
     { name: 'AI Recommendations', icon: <Sprout className="w-5 h-5"/> },
+    { name: 'AgriAI Chat', icon: <Bot className="w-5 h-5"/> },
     { name: 'Reports & History', icon: <FileText className="w-5 h-5"/> },
     { name: 'Market Value Estimator', icon: <DollarSign className="w-5 h-5"/> },
     { name: 'Notifications', icon: <BellRing className="w-5 h-5"/> },
@@ -118,6 +119,7 @@ const Dashboard = () => {
             {activeTab === 'AI Crop Advisor' && <AiCropAdvisorTab activeFarm={activeFarm} />}
             {activeTab === 'Irrigation' && <IrrigationMonitoringTab activeFarm={activeFarm} />}
             {activeTab === 'AI Recommendations' && <AdvancedAiSuggestions activeFarm={activeFarm} />}
+            {activeTab === 'AgriAI Chat' && <ChatbotTab activeFarm={activeFarm} />}
             {activeTab === 'Reports & History' && <ReportsHistoryTab activeFarm={activeFarm} />}
             {activeTab === 'Market Value Estimator' && <MarketValueEstimatorTab activeFarm={activeFarm} />}
             {activeTab === 'Notifications' && <AlertsNotificationsTab activeFarm={activeFarm} />}

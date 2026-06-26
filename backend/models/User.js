@@ -19,6 +19,11 @@ const userSchema = new mongoose.Schema({
     enum: ['Farmer', 'Admin'],
     default: 'Farmer',
   },
+  status: {
+    type: String,
+    enum: ['Active', 'Pending', 'Suspended'],
+    default: 'Active',
+  },
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', userSchema);

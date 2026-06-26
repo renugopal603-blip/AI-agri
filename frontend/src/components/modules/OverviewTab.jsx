@@ -2,15 +2,7 @@ import React from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Activity, Thermometer, Droplet, CloudRain, AlertTriangle, ChevronRight, Leaf, MapPin, Search, Edit3 } from 'lucide-react';
 
-const mockData = [
-  { name: 'Mon', temp: 32, humidity: 45 },
-  { name: 'Tue', temp: 30, humidity: 50 },
-  { name: 'Wed', temp: 28, humidity: 65 },
-  { name: 'Thu', temp: 29, humidity: 55 },
-  { name: 'Fri', temp: 31, humidity: 40 },
-  { name: 'Sat', temp: 33, humidity: 35 },
-  { name: 'Sun', temp: 34, humidity: 30 },
-];
+const mockData = [];
 
 const OverviewTab = ({ activeFarm, setActiveTab }) => {
   return (
@@ -33,8 +25,8 @@ const OverviewTab = ({ activeFarm, setActiveTab }) => {
           </div>
           <div>
             <h3 className="text-gray-500 text-sm font-medium">Temperature</h3>
-            <p className="text-2xl font-bold">32°C</p>
-            <p className="text-xs text-yellow-600 font-medium mt-1">Sunny</p>
+            <p className="text-2xl font-bold">—</p>
+            <p className="text-xs text-gray-400 font-medium mt-1">No data yet</p>
           </div>
         </div>
 
@@ -44,8 +36,8 @@ const OverviewTab = ({ activeFarm, setActiveTab }) => {
           </div>
           <div>
             <h3 className="text-gray-500 text-sm font-medium">Soil Moisture</h3>
-            <p className="text-2xl font-bold">42%</p>
-            <p className="text-xs text-green-500 font-medium mt-1">Optimal Level</p>
+            <p className="text-2xl font-bold">—</p>
+            <p className="text-xs text-gray-400 font-medium mt-1">No data yet</p>
           </div>
         </div>
 
@@ -55,8 +47,8 @@ const OverviewTab = ({ activeFarm, setActiveTab }) => {
           </div>
           <div>
             <h3 className="text-gray-500 text-sm font-medium">Active Alerts</h3>
-            <p className="text-2xl font-bold text-red-600">2</p>
-            <p className="text-xs text-red-500 font-medium mt-1">Requires Attention</p>
+            <p className="text-2xl font-bold">0</p>
+            <p className="text-xs text-gray-400 font-medium mt-1">No active alerts</p>
           </div>
         </div>
       </div>
@@ -152,23 +144,10 @@ const OverviewTab = ({ activeFarm, setActiveTab }) => {
 
         <div className="card p-6">
           <h3 className="text-lg font-bold mb-6">Recent Activity</h3>
-          <div className="space-y-6">
-            {[
-              { title: 'Irrigation System Activated', time: '2 hours ago', icon: <Droplet className="w-4 h-4 text-blue-500"/> },
-              { title: 'AI Suitability Report Generated', time: 'Yesterday', icon: <Activity className="w-4 h-4 text-purple-500"/> },
-              { title: 'Pest Alert: Low Risk Aphids', time: '3 days ago', icon: <AlertTriangle className="w-4 h-4 text-orange-500"/> },
-            ].map((activity, idx) => (
-              <div key={idx} className="flex gap-4 relative">
-                {idx !== 2 && <div className="absolute left-4 top-8 w-0.5 h-10 bg-gray-200"></div>}
-                <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center z-10 shrink-0">
-                  {activity.icon}
-                </div>
-                <div>
-                  <h4 className="font-medium text-sm text-gray-800 dark:text-gray-200">{activity.title}</h4>
-                  <p className="text-xs text-gray-500 mt-1">{activity.time}</p>
-                </div>
-              </div>
-            ))}
+          <div className="text-center py-8 text-gray-400">
+            <Activity className="w-10 h-10 mx-auto mb-3 opacity-30" />
+            <p className="text-sm">No recent activity found.</p>
+            <p className="text-xs mt-1">Your farm activities will appear here.</p>
           </div>
         </div>
       </div>

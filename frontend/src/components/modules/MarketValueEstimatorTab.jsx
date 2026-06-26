@@ -10,25 +10,7 @@ const cropsList = [
 ];
 
 // Mock Database for Market Intelligence
-const marketData = {
-  "Groundnut": { price: 80, unit: "Kilogram (Kg)", gst: 5, discount: 5, yieldPerAcre: 1000, demand: "High", trend: "Rising" },
-  "Paddy": { price: 25, unit: "Kilogram (Kg)", gst: 5, discount: 2, yieldPerAcre: 2000, demand: "Very High", trend: "Stable" },
-  "Rice": { price: 60, unit: "Kilogram (Kg)", gst: 5, discount: 3, yieldPerAcre: 1500, demand: "Very High", trend: "Rising" },
-  "Sugarcane": { price: 3000, unit: "Ton", gst: 5, discount: 0, yieldPerAcre: 40, demand: "High", trend: "Stable" },
-  "Cotton": { price: 7000, unit: "Quintal", gst: 5, discount: 2, yieldPerAcre: 10, demand: "High", trend: "Rising" },
-  "Tomato": { price: 40, unit: "Kilogram (Kg)", gst: 5, discount: 10, yieldPerAcre: 15000, demand: "Moderate", trend: "Volatile" },
-  "Potato": { price: 30, unit: "Kilogram (Kg)", gst: 5, discount: 5, yieldPerAcre: 12000, demand: "High", trend: "Rising" },
-  "Onion": { price: 50, unit: "Kilogram (Kg)", gst: 5, discount: 8, yieldPerAcre: 10000, demand: "High", trend: "Volatile" },
-  "Carrot": { price: 60, unit: "Kilogram (Kg)", gst: 5, discount: 5, yieldPerAcre: 8000, demand: "Moderate", trend: "Stable" },
-  "Brinjal": { price: 35, unit: "Kilogram (Kg)", gst: 5, discount: 5, yieldPerAcre: 10000, demand: "Moderate", trend: "Stable" },
-  "Chilli": { price: 120, unit: "Kilogram (Kg)", gst: 5, discount: 2, yieldPerAcre: 2000, demand: "High", trend: "Rising" },
-  "Maize": { price: 22, unit: "Kilogram (Kg)", gst: 5, discount: 2, yieldPerAcre: 2500, demand: "High", trend: "Stable" },
-  "Millets": { price: 45, unit: "Kilogram (Kg)", gst: 5, discount: 3, yieldPerAcre: 1200, demand: "Moderate", trend: "Rising" },
-  "Banana": { price: 25, unit: "Kilogram (Kg)", gst: 5, discount: 5, yieldPerAcre: 15000, demand: "High", trend: "Stable" },
-  "Coconut": { price: 30, unit: "Piece", gst: 5, discount: 0, yieldPerAcre: 8000, demand: "High", trend: "Rising" },
-  "Mango": { price: 100, unit: "Kilogram (Kg)", gst: 5, discount: 5, yieldPerAcre: 4000, demand: "Very High", trend: "Rising" },
-  "Other Crops": { price: 50, unit: "Kilogram (Kg)", gst: 5, discount: 5, yieldPerAcre: 1000, demand: "Moderate", trend: "Stable" }
-};
+const marketData = {};
 
 const MarketValueEstimatorTab = ({ activeFarm }) => {
   const [selectedCrop, setSelectedCrop] = useState('');

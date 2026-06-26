@@ -13,22 +13,8 @@ const Login = () => {
     e.preventDefault();
     setError('');
 
-    // ── Demo credentials (works without backend) ──────────────────
-    const DEMO_USERS = [
-      { email: 'admin@sams.com',  password: 'password123', role: 'Admin',  name: 'System Admin' },
-      { email: 'farmer@sams.com', password: 'password123', role: 'Farmer', name: 'John Farmer'  },
-    ];
-    const demo = DEMO_USERS.find(u => u.email === email && u.password === password);
-    if (demo) {
-      localStorage.setItem('userInfo', JSON.stringify(demo));
-      demo.role === 'Admin' ? navigate('/admin') : navigate('/dashboard');
-      return;
-    }
-    // ─────────────────────────────────────────────────────────────
-
-    // Try real backend if demo didn't match
     try {
-      const { data } = await axios.post('http://localhost:5000/api/auth/login', { email, password });
+      const { data } = await axios.post('https://ai-agri-ndqq.onrender.com/api/auth/login', { email, password });
       localStorage.setItem('userInfo', JSON.stringify(data));
       data.role === 'Admin' ? navigate('/admin') : navigate('/dashboard');
     } catch (err) {

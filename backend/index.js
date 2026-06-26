@@ -21,7 +21,7 @@ app.get('/', (req, res) => {
 
 // Define Routes
 app.use('/api/auth', require('./routes/authRoutes'));
-// app.use('/api/users', require('./routes/userRoutes'));
+app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/soils', require('./routes/soilRoutes'));
 app.use('/api/crops', require('./routes/cropRoutes'));
 app.use('/api/farms', require('./routes/farmRoutes'));

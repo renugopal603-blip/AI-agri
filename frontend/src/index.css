@@ -3,6 +3,9 @@
 @tailwind utilities;
 
 @layer base {
+  * {
+    scroll-behavior: smooth;
+  }
   body {
     @apply bg-agri-bg-light text-gray-800 font-sans transition-colors duration-300;
   }
@@ -14,6 +17,10 @@
   }
   .dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 {
     @apply text-agri-green-light;
+  }
+
+  ::selection {
+    @apply bg-agri-green text-white;
   }
 }
 
@@ -39,10 +46,41 @@
   .label-text {
     @apply block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1;
   }
+
+  /* Premium glass morphism */
+  .glass-card {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+  }
+
+  /* Gradient text utility */
+  .gradient-text {
+    @apply text-transparent bg-clip-text bg-gradient-to-r from-agri-green to-emerald-500;
+  }
+
+  /* Section heading style */
+  .section-badge {
+    @apply inline-flex items-center gap-2 px-5 py-2 rounded-full font-semibold text-sm tracking-wide;
+    background: linear-gradient(135deg, rgba(5, 150, 105, 0.1), rgba(20, 184, 166, 0.1));
+    color: #059669;
+    border: 1px solid rgba(5, 150, 105, 0.2);
+  }
 }
 
 @layer utilities {
   .glass {
     @apply bg-white/70 dark:bg-agri-bg-darkSurface/70 backdrop-blur-md border border-white/20 dark:border-gray-700/50 shadow-xl;
   }
+
+  /* Stagger animation delays */
+  .delay-100 { animation-delay: 100ms; }
+  .delay-200 { animation-delay: 200ms; }
+  .delay-300 { animation-delay: 300ms; }
+  .delay-400 { animation-delay: 400ms; }
+  .delay-500 { animation-delay: 500ms; }
+  .delay-600 { animation-delay: 600ms; }
+  .delay-700 { animation-delay: 700ms; }
+  .delay-800 { animation-delay: 800ms; }
 }

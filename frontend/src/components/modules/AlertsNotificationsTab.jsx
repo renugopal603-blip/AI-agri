@@ -1,13 +1,7 @@
 import React, { useState } from 'react';
 import { Bell, CloudRain, Sun, Droplet, Bug, AlertTriangle, CheckCircle, Search, Filter } from 'lucide-react';
 
-const mockAlerts = [
-  { id: 1, type: 'weather', title: 'Heavy Rainfall Warning', desc: 'Expected 45mm rain over next 24h. Delay fertilization.', time: '2 hours ago', icon: <CloudRain/>, color: 'text-blue-500', bg: 'bg-blue-100', isRead: false },
-  { id: 2, type: 'soil', title: 'Low Soil Moisture', desc: 'Moisture in Sector B dropped below 30%. Triggering irrigation recommended.', time: '5 hours ago', icon: <Droplet/>, color: 'text-orange-500', bg: 'bg-orange-100', isRead: false },
-  { id: 3, type: 'pest', title: 'Pest Outbreak Risk', desc: 'Conditions favorable for Aphids based on recent humidity spike.', time: '1 day ago', icon: <Bug/>, color: 'text-red-500', bg: 'bg-red-100', isRead: true },
-  { id: 4, type: 'system', title: 'Fertilizer Application Reminder', desc: 'Scheduled NPK application for Cotton crop is due tomorrow.', time: '2 days ago', icon: <AlertTriangle/>, color: 'text-yellow-500', bg: 'bg-yellow-100', isRead: true },
-  { id: 5, type: 'weather', title: 'Drought Warning Lifted', desc: 'Recent rainfall has stabilized water tables in your district.', time: '1 week ago', icon: <Sun/>, color: 'text-green-500', bg: 'bg-green-100', isRead: true },
-];
+const mockAlerts = [];
 
 const AlertsNotificationsTab = () => {
   const [alerts, setAlerts] = useState(mockAlerts);

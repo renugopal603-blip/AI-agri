@@ -1,64 +1,63 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, Plus, Edit, Trash2, CheckCircle, XCircle, User, Activity, X } from 'lucide-react';
+import axios from 'axios';
 
 const UserManagementTab = () => {
   const [searchQuery, setSearchQuery] = useState('');
   
-  const [farmers, setFarmers] = useState(() => {
-    const saved = localStorage.getItem('sams_registered_users');
-    const registeredUsers = saved ? JSON.parse(saved) : [];
-    
-    const mockData = [
-      { id: 1, name: 'John Doe', email: 'john@example.com', status: 'Active', location: 'North Acre', joinDate: '2023-10-15' },
-      { id: 2, name: 'Sarah Connor', email: 'sarah@example.com', status: 'Active', location: 'East Valley', joinDate: '2024-02-10' },
-      { id: 3, name: 'Michael Smith', email: 'michael@example.com', status: 'Suspended', location: 'West Fields', joinDate: '2023-11-05' },
-      { id: 4, name: 'Emma Wilson', email: 'emma@example.com', status: 'Pending', location: 'South Farm', joinDate: '2024-03-20' },
-    ];
-    
-    // Combine mock data with newly registered users
-    const registeredEmails = new Set(registeredUsers.map(u => u.email));
-    const filteredMockData = mockData.filter(u => !registeredEmails.has(u.email));
-    
-    return [...filteredMockData, ...registeredUsers];
-  });
-
+  const [farmers, setFarmers] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentFarmer, setCurrentFarmer] = useState({ name: '', email: '', status: 'Active' });
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUsers = async () => {
+    try {
+      const { data } = await axios.get('https://ai-agri-ndqq.onrender.com/api/users');
+      setFarmers(data.map(u => ({ ...u, id: u._id, joinDate: new Date(u.createdAt || Date.now()).toISOString().split('T')[0] })));
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    }
+  };
 
   const filteredFarmers = farmers.filter(f => 
     f.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
     f.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
     if (!currentFarmer.name || !currentFarmer.email) return;
 
-    if (currentFarmer.id) {
-      // Edit existing
-      setFarmers(farmers.map(f => f.id === currentFarmer.id ? { ...f, ...currentFarmer } : f));
-    } else {
-      // Add new
-      setFarmers([...farmers, { 
-        ...currentFarmer, 
-        id: Date.now(), 
-        joinDate: new Date().toISOString().split('T')[0] 
-      }]);
-    }
-    setIsModalOpen(false);
-  };
-
-  const toggleStatus = (id) => {
-    setFarmers(farmers.map(f => {
-      if (f.id === id) {
-        return { ...f, status: f.status === 'Active' ? 'Suspended' : 'Active' };
+    try {
+      if (currentFarmer.id) {
+        // Edit existing
+        const { data } = await axios.put(`https://ai-agri-ndqq.onrender.com/api/users/${currentFarmer.id}`, currentFarmer);
+        setFarmers(farmers.map(f => f.id === currentFarmer.id ? { ...f, ...data, id: data._id } : f));
+      } else {
+        // Add new via auth register
+        const { data } = await axios.post('https://ai-agri-ndqq.onrender.com/api/auth/register', {
+          ...currentFarmer,
+          password: 'password123', // Default password for admin-created users
+          role: 'Farmer'
+        });
+        setFarmers([...farmers, { ...data, id: data._id, joinDate: new Date().toISOString().split('T')[0], status: 'Active' }]);
       }
-      return f;
-    }));
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error('Error saving user:', error);
+    }
   };
 
-  const deleteFarmer = (id) => {
-    setFarmers(farmers.filter(f => f.id !== id));
+  const deleteFarmer = async (id) => {
+    try {
+      await axios.delete(`https://ai-agri-ndqq.onrender.com/api/users/${id}`);
+      setFarmers(farmers.filter(f => f.id !== id));
+    } catch (error) {
+      console.error('Error deleting user:', error);
+    }
   };
 
   return (
