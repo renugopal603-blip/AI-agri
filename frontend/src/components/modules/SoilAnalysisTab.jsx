@@ -114,7 +114,7 @@ const SoilAnalysisTab = ({ activeFarm }) => {
         <div className="card p-6">
           <h4 className="font-bold mb-4">Nutrient Profile (NPK & Others)</h4>
           <div className="h-72">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
               <RadarChart cx="50%" cy="50%" outerRadius="80%" data={soilNutrients}>
                 <PolarGrid stroke="#e5e7eb" />
                 <PolarAngleAxis dataKey="subject" tick={{ fill: '#6b7280', fontSize: 12 }} />
@@ -129,7 +129,7 @@ const SoilAnalysisTab = ({ activeFarm }) => {
         <div className="card p-6">
           <h4 className="font-bold mb-4">Historical Trends</h4>
           <div className="h-72">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
               <BarChart data={historicalData} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
                 <XAxis dataKey="month" axisLine={false} tickLine={false} />

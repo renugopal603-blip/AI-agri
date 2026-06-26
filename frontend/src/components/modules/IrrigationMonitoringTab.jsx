@@ -73,7 +73,7 @@ const IrrigationMonitoringTab = () => {
         <div className="lg:col-span-2 card p-6">
           <h4 className="font-bold mb-6">Soil Moisture & Water Consumption Trends</h4>
           <div className="h-72">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
               <AreaChart data={waterData}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
                 <XAxis dataKey="time" axisLine={false} tickLine={false} />

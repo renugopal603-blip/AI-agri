@@ -90,7 +90,7 @@ const WeatherAnalysisTab = ({ activeFarm }) => {
         <div className="card p-6">
           <h4 className="font-bold mb-6">Temperature Trends (7 Days)</h4>
           <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
               <LineChart data={forecastData}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
                 <XAxis dataKey="day" axisLine={false} tickLine={false} />
@@ -108,7 +108,7 @@ const WeatherAnalysisTab = ({ activeFarm }) => {
         <div className="card p-6">
           <h4 className="font-bold mb-6">Precipitation Forecast</h4>
           <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
               <BarChart data={forecastData}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
                 <XAxis dataKey="day" axisLine={false} tickLine={false} />
