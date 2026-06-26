@@ -72,7 +72,7 @@ const ChatbotTab = ({ activeFarm }) => {
     scrollToBottom();
   }, [messages, isTyping]);
 
-  const handleSend = (e) => {
+  const handleSend = async (e) => {
     e.preventDefault();
     if (!input.trim()) return;
 
